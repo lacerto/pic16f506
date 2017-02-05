@@ -1,6 +1,8 @@
 #include "p16F506.inc"
 
-;#define LOW_CURRENT
+;#define LOW_CURRENT    ; Only one LED is on at any given time in order
+                        ; to minimize current draw and enable to use
+                        ; a 9V block for testing.
 
     global GetCount, PortCTable, PortBTable
 
@@ -8,7 +10,7 @@ PORT_TABLES CODE
 
 #ifdef LOW_CURRENT
 GetCount:
-    retlw 0x12
+    retlw 0x12          ; Number of look-up table entries.
 
 PortCTable:
     addwf PCL, F
@@ -61,7 +63,7 @@ PortBTable:
 #else
 
 GetCount:
-    retlw 0x10
+    retlw 0x10          ; Number of look-up table entries.
 
 PortCTable:
     addwf PCL, F

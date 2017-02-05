@@ -29,6 +29,13 @@ SECTION    NAME=IDLOCS     ROM=.idlocs         // ID locations
 
 // Modifications
 
+// Main program is on page0
 SECTION    NAME=MAIN_PROG       ROM=page0
+
+// The look-up tables for PORTB & PORTC are on page1.
+// As PC<8> of the 10 bit PC is cleared when doing computed jumps, these
+// are limited to the first 256 locations of each page.
+// In order not to interfere with the main program, the look-up tables are
+// placed on page1. (See DS41268D chapter 4.6 Program Counter)
 SECTION    NAME=PORT_TABLES     ROM=page1
 

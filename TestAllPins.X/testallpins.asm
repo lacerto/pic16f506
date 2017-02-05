@@ -7,24 +7,22 @@
     extern GetCount, PortCTable, PortBTable
 
 UNINITIALIZED_DATA  UDATA
-Index res 1
-PortBVal res 1
-PortCVal res 1
-Count res 1
-PortBBeforeSleep res 1
+Index               res 1           ; Look-up table index
+PortBVal            res 1           ; Value to write to PORTB
+PortCVal            res 1           ; Value to write to PORTC
+Count               res 1           ; Count of look-up table entries
+PortBBeforeSleep    res 1           ; Value of PORTB read before going to sleep
 
 RES_VECT  CODE    0x0000            ; processor reset vector
     pagesel START
     GOTO    START                   ; go to beginning of program
 
-; TODO ADD INTERRUPTS HERE IF USED
-
 MAIN_PROG CODE
 
 START
     pagesel GetCount
-    call GetCount
-    movwf Count
+    call GetCount                   ; get the number of look-up table entries
+    movwf Count                     ; save it to Count
     pagesel START
 
     ; NOT_PD == 1 normal reset / power up
@@ -38,13 +36,13 @@ START
     goto Clear
 
 Increase:
-    btfss PortBBeforeSleep, RB3
+    btfss PortBBeforeSleep, RB3     ; RB3 == 0? don't increase Index
     goto Init
-    incf Index, F   ; Index++
+    incf Index, F                   ; Index++
     movf Index, W
-    xorwf Count, W   ; Index == Count?
-    btfss STATUS, Z ; yes -> skip next (goto Clear)
-    goto Init       ; no -> Init
+    xorwf Count, W                  ; Index == Count?
+    btfss STATUS, Z                 ; yes -> skip next (goto Clear)
+    goto Init                       ; no -> Init
 
 Clear:
     clrf PortBBeforeSleep
@@ -60,17 +58,22 @@ Init:
     bcf ADCON0, ANS0
     bcf ADCON0, ANS1
 
-    ; Enable wake-up on pin change, clear T0CS.
+    ; Enable wake-up on pin change, clear T0CS (Timer0 clock source
+    ; is internal, so we can use the T0CKI (RC5) pin as digital IO).
     movlw 0x5f
     option
 
-    ; Only RB3 is input.
-    movlw b'00001000'
+    ; RB3 & RB5 on PORTB are inputs.
+    movlw b'00101000'
     tris PORTB
 
     ; All PORTC pins are output.
     clrw
     tris PORTC
+
+    ; Check RB5.
+    btfss PORTB, RB5    ; Button pressed? (RB5 == 0)
+    clrf Index          ; Yes -> clear Index
 
     ; Get data from the look-up table and write it to the ports.
     pagesel PortBTable
@@ -84,6 +87,7 @@ Init:
     pagesel GoToSleep
 
 GoToSleep:
+    ; Read the input pins to avoid instant wake-up (DS41268D chapter 10.9.1).
     movf PORTB, W
     movwf PortBBeforeSleep
     sleep
