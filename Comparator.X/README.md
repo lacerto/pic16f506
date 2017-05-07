@@ -17,7 +17,7 @@ I used an [LD33V (LD1117V33)](http://www.st.com/content/ccc/resource/technical/d
 * 1x electrolytic capacitor 10&micro;F between V<sub>out</sub> and GND
 
 ## Circuit diagram
-![Schematic] (https://github.com/lacerto/pic16f506/blob/master/Comparator.X/PIC16F506_Comparator.png)
+![Schematic](PIC16F506_Comparator.png "Schematic")
 
 ## How it works
 The program constantly blinks an "alive" LED connected to RB2. It uses comparator C2 as an internally generated voltage reference can be defined for one of the C2 comparator inputs.
